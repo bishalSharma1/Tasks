@@ -12,7 +12,7 @@ const getAllTasks = async (req, res) => {
 const createTask = async (req, res) => {
   try {
     const singleTask = await Task.create(req.body)
-    res.status(201).json({ singleTask })
+    res.status(201).json(singleTask)
     console.log('Task Created')
   } catch (error) {
     res.status(500).json(error)
@@ -50,4 +50,23 @@ const changeSingleTask = async (req, res) => {
   }
 }
 
-module.exports = { getAllTasks, createTask, getSingleTask, changeSingleTask }
+const deleteTask = async (req, res) => {
+  try {
+    const taskID = req.params.id
+    const deletedTask = await Task.findOneAndDelete({ _id: taskID })
+    if (!deletedTask) {
+      console.log('no task with such ID')
+    }
+    res.status(200).json({ message: 'task deleted' })
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+module.exports = {
+  getAllTasks,
+  createTask,
+  getSingleTask,
+  changeSingleTask,
+  deleteTask,
+}

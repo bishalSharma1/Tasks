@@ -1,6 +1,22 @@
 const btn = document.querySelector('.formSubmit')
 const input = document.querySelector('.formInput')
+input.value = ''
 const tasksSection = document.querySelector('.sectionDiv')
+let checker = true
+
+btn.addEventListener('click', async (e) => {
+  e.preventDefault()
+  const taskName = input.value
+  console.log(taskName)
+  try {
+    await axios.post('/api/v1/tasks/', {
+      name: taskName,
+    })
+    location.reload()
+  } catch (error) {
+    console.log(error)
+  }
+})
 
 const showAllTasks = async () => {
   try {
@@ -13,9 +29,12 @@ const showAllTasks = async () => {
       const { name, completed, _id } = task
       const taskID = _id
       const hElement = document.createElement('h3')
-      hElement.className = 'heading_3'
       const cbElement = document.createElement('input')
       cbElement.setAttribute('type', 'checkbox')
+      cbElement.id = `cbElement${taskID}`
+      label = document.createElement('label')
+      label.setAttribute('for', `cbElement${taskID}`)
+      label.innerHTML = 'completed status: '
       if (completed === true) {
         cbElement.setAttribute('checked', completed)
       }
@@ -23,16 +42,18 @@ const showAllTasks = async () => {
       const editButton = document.createElement('button')
       editButton.innerHTML = 'edit task'
       deleteButton.innerHTML = 'delete task'
+      breakLine = document.createElement('br')
       const taskText = document.createTextNode(name)
       hElement.appendChild(taskText)
       const tasksDiv = document.createElement('div')
       tasksDiv.id = `tasksDiv${name}`
       tasksSection.appendChild(tasksDiv)
       tasksDiv.appendChild(hElement)
+      tasksDiv.appendChild(label)
       tasksDiv.appendChild(cbElement)
+      tasksDiv.appendChild(breakLine)
       tasksDiv.appendChild(editButton)
       tasksDiv.appendChild(deleteButton)
-      cbElement.id = `cbElement${taskID}`
 
       editButton.addEventListener('click', () => {
         editHandler(taskID)
@@ -40,20 +61,30 @@ const showAllTasks = async () => {
       deleteButton.addEventListener('click', () => {
         deleteHandler(taskID)
       })
+      cbElement.addEventListener('click', async () => {
+        try {
+          await axios.patch(`/api/v1/tasks/${taskID}`, {
+            completed: cbElement.checked,
+          })
+          location.reload()
+        } catch (error) {
+          console.log(error)
+        }
+      })
     })
   } catch (error) {
     console.log(error)
   }
 }
+
 showAllTasks()
 
 const editHandler = async (taskID) => {
   try {
     const url = '/api/v1/tasks/' + taskID
     console.log(url)
-    const { data: task } = await axios.get(url)
-    const checker = taskID
-    if (checker === taskID) {
+    if (checker === true) {
+      const { data: task } = await axios.get(url)
       const inputElem = document.createElement('input')
       const submitElem = document.createElement('button')
       inputElem.setAttribute('type', 'text')
@@ -69,6 +100,8 @@ const editHandler = async (taskID) => {
       editDiv.appendChild(submitElem)
       checker = false
       submitElem.addEventListener('click', () => editSubmitHandler(taskID))
+    } else {
+      alert('edit one at a time')
     }
   } catch (error) {
     console.log(error)
@@ -96,6 +129,16 @@ const editSubmitHandler = async (taskID) => {
     console.log(task)
     location.reload()
     showAllTasks()
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const deleteHandler = async (taskID) => {
+  try {
+    console.log(taskID)
+    await axios.delete(`/api/v1/tasks/${taskID}`)
+    location.reload()
   } catch (error) {
     console.log(error)
   }

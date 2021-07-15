@@ -8,5 +8,6 @@ router
   .route('/:id')
   .get(controllers.getSingleTask)
   .patch(controllers.changeSingleTask)
+  .delete(controllers.deleteTask)
 
 module.exports = router
